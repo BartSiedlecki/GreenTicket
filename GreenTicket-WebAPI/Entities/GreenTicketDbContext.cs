@@ -4,19 +4,22 @@ namespace GreenTicket_WebAPI.Entities
 {
     public class GreenTicketDbContext : DbContext
     {
-        string _connectionString = "Server=DESKTOP-12S11S9\\SQLEXPRESS;Database=GreenTicketDB;Trusted_Connection=True;TrustServerCertificate=True";
+        string _connectionString = "Server=BARTEK-PC\\SQLEXPRESS;Database=GreenTicketDB;Trusted_Connection=True;TrustServerCertificate=True";
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<City> Cities { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<EventCategory> EventCategories { get; set; }
-        public DbSet<EventSubCategory> EventSubCategories { get; set; }
-        public DbSet<Performer> Performers { get; set; }
-
         public DbSet<EventPerformer> EventPerformers { get; set; }
-
-        public DbSet<Venue> Venues { get; set; }
-        public DbSet<Section> Sections { get; set; }
+        public DbSet<EventSubCategory> EventSubCategories { get; set; }
+        public DbSet<Image> Images { get; set; }
+        public DbSet<Newsletter> Newsletters { get; set; }
+        public DbSet<Performer> Performers { get; set; }
         public DbSet<Row> Rows { get; set; }
         public DbSet<Seat> Seats { get; set; }
+        public DbSet<Section> Sections { get; set; }
+        public DbSet<Venue> Venues { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,11 +42,6 @@ namespace GreenTicket_WebAPI.Entities
                 .HasMaxLength(20);
 
                 entity
-                .Property(e => e.City)
-                .IsRequired()
-                .HasMaxLength(50);
-
-                entity
                 .Property(e => e.Street)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -52,6 +50,19 @@ namespace GreenTicket_WebAPI.Entities
                 .Property(e => e.StreetNo)
                 .IsRequired()
                 .HasMaxLength(10);
+            });
+
+            // City
+            modelBuilder.Entity<City>(entity =>
+            {
+                entity
+                .ToTable(nameof(City));
+
+                entity
+                .Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(50);
+
             });
 
             // Event
@@ -68,7 +79,7 @@ namespace GreenTicket_WebAPI.Entities
                 entity
                 .Property(e => e.Description)
                 .IsRequired()
-                .HasMaxLength(300);
+                .HasMaxLength(50);
 
                 entity
                 .Property(e => e.StartDateTime)
@@ -79,6 +90,11 @@ namespace GreenTicket_WebAPI.Entities
                 .Property(e => e.EndDateTime)
                 .IsRequired()
                 .HasPrecision(6);
+
+                entity
+                .Property(e => e.CreateDateTime)
+                .IsRequired();
+                
             });
 
             // EventCategory
@@ -121,6 +137,45 @@ namespace GreenTicket_WebAPI.Entities
                 entity.HasOne(bc => bc.Performer)
                 .WithMany(c => c.EventPerformers)
                 .HasForeignKey(bc => bc.PerformerId);
+            });
+
+            // Image
+            modelBuilder.Entity<Image>(entity =>
+            {
+                entity
+                .ToTable(nameof(Image));
+
+                entity
+               .Property(e => e.FileName)
+               .IsRequired()
+               .HasMaxLength(40);
+
+                entity
+                .Property(e => e.ImageType)
+                .HasConversion<int>();
+
+            });
+
+            // Newsletter
+            modelBuilder.Entity<Newsletter>(entity =>
+            {
+                entity
+                .ToTable(nameof(Newsletter));
+
+                entity
+               .Property(e => e.EmailAddress)
+               .IsRequired()
+               .HasMaxLength(50);
+
+                entity
+               .Property(e => e.IPAddress)
+               .IsRequired()
+               .HasMaxLength(20);
+
+                entity
+                .Property(e => e.CreateDate)
+                .HasColumnType("datetime2");
+
             });
 
             //Performer
@@ -208,6 +263,8 @@ namespace GreenTicket_WebAPI.Entities
                 .IsRequired()
                 .HasMaxLength(500);
             });
+
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

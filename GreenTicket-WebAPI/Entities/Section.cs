@@ -14,7 +14,7 @@
         public bool IsStanding { get; set; } = false;
 
         public ICollection<Row> Rows { get; set; }
-        public int EventID { get; set; }
+        public int EventId { get; set; }
         public Event Event { get; set; } = null!;
     }
 }
