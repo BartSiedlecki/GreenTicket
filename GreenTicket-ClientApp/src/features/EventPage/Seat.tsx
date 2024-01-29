@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useState } from 'react';
 import { Col } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
@@ -18,63 +18,53 @@ interface Props {
 
 export default observer(function Seat({ eventId, sectionId, sectionPrice, row, seat }: Props) {
     const { t } = useTranslation();
-    const { eventPageStore } = useStore();
-    const { setSelectedSection, sessionId, loadSectionPreview, canAddNewTicket, event, addSeatingTicket  } = eventPageStore;
+    const { eventPageStore, basketStore } = useStore();
+    const { setSelectedSection, sessionId, selectedSection, event  } = eventPageStore;
+    const { canAddSeatTicket, isSeatInCurrentReservation, addSeatingTicketToBasket, removeTicketFromBasket, ticketLimitReached } = basketStore;
 
-    const isSeatAvailable = !(seat.sold || seat.reserved);
+    const isSeatInCurReservation = isSeatInCurrentReservation(seat);
+    const isSeatAvailable = canAddSeatTicket(seat);
     const getCssClass = () => {
         let baseClass = "seating-preview-seat m-1 py-1 rounded"
 
+
         if (seat.sold) {
             baseClass += " seating-preview-sold-seat"
-        } else if (seat.currentReservation) {
+        } else if (isSeatInCurReservation) {
             baseClass += " seating-preview-current-reservation-seat"
         } else if (seat.reserved) {
             baseClass += " seating-preview-reserved-seat"
         }  else {
             baseClass += " seating-preview-available-seat"
         }
-
         return baseClass;
     }
 
     const handleSelectSeat = () => {
-
         if (isSeatAvailable) {
-
-            //console.log("selectedSeatingTickets:");
-            //console.log(selectedSeatingTickets);
-
-            //console.log("selectedStandingTicketIds.length");
-            //console.log(selectedStandingTicketIds.length);
-            //console.log("selectedSeatingTickets.length");
-            //console.log(selectedSeatingTickets.length);
-            console.log("event?.limitPerUser");
-            console.log(event?.limitPerUser);
-            console.log("canAddNewTicket");
-            console.log(canAddNewTicket);
-
-            if (canAddNewTicket()) {
-
-                agent.Seats.reserve(eventId, sectionId, seat.seatId, sessionId)
+            if (ticketLimitReached(event!)) {
+                agent.Seats.reserve(eventId, sectionId, seat.id, sessionId)
+                    .then(response => {
+                        addSeatingTicketToBasket(event!, selectedSection!, row, seat, response);
+                    })
                     .catch(error => toast.error(error))
                     .finally(() => agent.Sections.getPreview(eventId, sectionId, sessionId)
                         .then(response => setSelectedSection(response)))
-
-                addSeatingTicket(row.name, sectionPrice, seat);
 
             } else {
                 toast.error(t("LimitReached"))
             }
         } else if (seat.currentReservation) {
-            agent.Seats.cancelReservationSeat(eventId, sectionId, seat.seatId, sessionId)
+            agent.Seats.cancelReservationSeat(eventId, sectionId, seat.id, sessionId)
                 .catch(error => toast.error(error))
                 .finally(() => agent.Sections.getPreview(eventId, sectionId, sessionId)
                     .then(response => setSelectedSection(response)))
-        }
 
-    //    loadPreview();
+            removeTicketFromBasket(seat.id);
+        }
     }
+
+
 
     return (
         <Col

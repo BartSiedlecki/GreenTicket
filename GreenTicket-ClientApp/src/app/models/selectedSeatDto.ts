@@ -4,6 +4,7 @@ export interface SelectedSeatDto {
     rowName: string | undefined;
     seatNo: number | undefined;
     price: number;
+    eventName: string;
     sectionId: number;
     sectionName: string;
 }

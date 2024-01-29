@@ -1,25 +1,28 @@
-﻿import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Col, Nav, Navbar, NavDropdown, Row } from 'react-bootstrap';
 import "react-bootstrap-submenu/dist/index.css";
-import { DropdownSubmenu, NavDropdownMenu } from "react-bootstrap-submenu";
 import logo60 from '../../../data/logo/logo60.png';
 import agent from '../../API/agent';
 import { EventCategoryNavDto } from '../../models/eventCategoryNavDto';
 import { SearchInput } from './SearchInput';
-import { GlobeAmericas, Person, Translate } from 'react-bootstrap-icons';
 import LoginDropDown from './LoginDropDown';
 import { LangDropDown } from './LangDropDown';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { CityDto } from '../../models/cityDto';
 import { prepareRoutingParamText } from '../../../features/Shared/helpers';
+import { useStore } from '../../store/store';
+import LoggedUserDropdown from './LoggedUserDropdown';
+import { observer } from 'mobx-react-lite';
+import BasketDropdown from './BasketDropdown';
 
-export function NavBar() {
+export default observer(function MainNavBar() {
+    const { t } = useTranslation();
+    const { userStore } = useStore();
     const logoImg = logo60;
     const [navCategories, setNavCategories] = useState<EventCategoryNavDto[]>([]);
     const [navCities, setNavCities] = useState<CityDto[]>([]);
 
-    const { t } = useTranslation();
 
     useEffect(() => {
         agent.Categories.getNavigation()
@@ -61,10 +64,6 @@ export function NavBar() {
                                     <NavDropdown.Item key={index} as={NavLink} to={`/event/category/all/all/city/${prepareRoutingParamText(city.name)}/0/0/${city.id}/`}>{`${city.name}`}</NavDropdown.Item>
                                 )}
                             </NavDropdown>
-                            <Col xs={6} className="d-flex d-lg-none mobile-nav-icon-col">
-                                <LangDropDown className="ms-0 my-3 ms-lg-3 my-lg-0 mobile-nav-icon" />
-                                <LoginDropDown className="ms-0 my-3 ms-lg-3 my-lg-0 mobile-nav-icon" />
-                            </Col>
                         </Nav>
                     </Navbar.Collapse>
                 </Col>
@@ -73,10 +72,15 @@ export function NavBar() {
                 </Col>
                 <Col xs={6} lg={2} xxl={3} className="d-none d-lg-flex">
                     <div className="p-2 w-100"></div>
-                    <LangDropDown className="ms-0 my-3 ms-lg-3 my-lg-0 pt-2" />
-                    <LoginDropDown className="ms-0 my-3 ms-lg-3 my-lg-0 pt-2" />
+                    <BasketDropdown className="ms-0 my-3 ms-lg-3 my-lg-0 pt-2 dropstart dropdown" />
+                    <LangDropDown className="ms-0 my-3 ms-lg-3 my-lg-0 pt-2 dropstart" />
+                    {userStore.user ?
+                        <LoggedUserDropdown className="ms-0 my-3 ms-lg-3 my-lg-0 pt-2 dropstart" />
+                        :
+                        <LoginDropDown className="ms-0 my-3 ms-lg-3 my-lg-0 pt-2 dropstart" />
+                    }
                 </Col>
             </Row>
         </Navbar>
     )
-}
+})

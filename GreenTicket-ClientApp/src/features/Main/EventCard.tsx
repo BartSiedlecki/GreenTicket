@@ -13,7 +13,7 @@ interface Props {
 export default function EventCard({ event }: Props) {
     const { t } = useTranslation();
     const { eventPageStore } = useStore();
-    const { loadingEvent, loadEvent, checkSessionId } = eventPageStore;
+    const { loadEvent, checkSessionId } = eventPageStore;
 
 
     const handleBuyTicketsButtonClick = () => {

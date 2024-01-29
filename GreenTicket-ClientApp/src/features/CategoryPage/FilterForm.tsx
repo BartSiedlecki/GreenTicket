@@ -11,7 +11,6 @@ import { prepareRoutingParamText } from '../Shared/helpers';
 export default observer(function FilterForm() {
     const { t } = useTranslation();
     const { categoryPageStore: {
-        selectedCategoryId, setSelectedCategoryId,
         categories, setCategories,
         selectedCategory, setSelectedCategory, 
         selectedSubcategory, setSelectedSubcategory,
@@ -20,15 +19,6 @@ export default observer(function FilterForm() {
         loadEvents    } } = useStore()
 
     const { categoryId, subCategoryId, cityId } = useParams<{ categoryId: string, subCategoryId: string, cityId: string }>();
-
-    useEffect(() => {
-        console.log("categoryId")
-        console.log(categoryId)
-        console.log("subCategoryId")
-        console.log(subCategoryId)
-        console.log("cityId")
-        console.log(cityId)
-    }, [])
 
     useEffect(() => {
         agent.Categories.getNavigation()
@@ -48,17 +38,14 @@ export default observer(function FilterForm() {
 
     useEffect(() => {
         setSelectedCategory(Number(categoryId));
-        loadEvents();
     }, [categoryId])
 
     useEffect(() => {
         setSelectedSubcategory(Number(subCategoryId));
-        loadEvents();
     }, [subCategoryId])
 
     useEffect(() => {
         setSelectedCity(Number(cityId));
-        loadEvents();
     }, [cityId])
 
     const handleCategoryChange = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -86,7 +73,6 @@ export default observer(function FilterForm() {
         setSelectedCategory(0);
         setSelectedSubcategory(0);
         setSelectedCity(0);
-        //loadEvents();
     }
 
     return (

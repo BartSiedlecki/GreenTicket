@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using GreenTicket_WebAPI.Entities;
+using GreenTicket_WebAPI.Exceptions;
 using GreenTicket_WebAPI.Models;
 using GreenTicket_WebAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;

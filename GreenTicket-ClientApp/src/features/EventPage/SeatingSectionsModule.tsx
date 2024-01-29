@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import agent from '../../app/API/agent';
 import { SectionDto } from '../../app/models/sectionDto';
 import { useStore } from '../../app/store/store';
-import AddingTicktsModule from './AddinfTicketsModule';
+import AddingTicktsModule from './AddingTicketsModule';
 import Seat from './Seat';
 
 interface Props {
@@ -16,9 +16,11 @@ interface Props {
 
 export default observer(function SeatingSectionsModule({ eventId, sections }: Props) {
     const { t } = useTranslation();
-    const { eventPageStore } = useStore();
+    const { eventPageStore, basketStore } = useStore();
     const { selectedSection, setSelectedSection, loadSectionPreview } = eventPageStore;
-    
+    const { tickets } = basketStore;
+
+
     const [sectedSectionId, setSectedSectionId] = useState();
 
     const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -31,15 +33,13 @@ export default observer(function SeatingSectionsModule({ eventId, sections }: Pr
         }
     }
 
-    //useEffect(() => {
-    //    setSelectedSection(null);
 
-    //    loadSectionPreview();
-    //}, [])
 
-    //useEffect(() => {
-    //    loadSectionPreview();
-    //}, [selectedSection])
+    useEffect(() => {
+      console.log("----------------------")
+        setSelectedSection(selectedSection);
+        loadSectionPreview();
+    }, [tickets])
 
     return (
         <>
@@ -70,7 +70,7 @@ export default observer(function SeatingSectionsModule({ eventId, sections }: Pr
                                     </Col>
                                     <Col xs={10} className="seating-preview-row text-center my-0 px-0">
                                         {row.seats.map(seat => (
-                                            <Seat key={seat.seatId} seat={seat} eventId={eventId} sectionId={selectedSection.id} sectionPrice={selectedSection.price} row={row}  />
+                                            <Seat key={seat.id} seat={seat} eventId={eventId} sectionId={selectedSection.id} sectionPrice={selectedSection.price} row={row}  />
                                         ))}
                                     </Col>
                                     <Col xs={1} className="my-2">

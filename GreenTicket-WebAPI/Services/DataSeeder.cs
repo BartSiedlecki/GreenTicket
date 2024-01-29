@@ -1,37 +1,58 @@
 ﻿using GreenTicket_WebAPI.Entities;
 using GreenTicket_WebAPI.Services.Helpers;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Hosting;
+using Microsoft.VisualBasic;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
+using System;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
+using System.Reflection;
 
 namespace GreenTicket_WebAPI.Services
 {
     public class DataSeeder
     {
         private readonly GreenTicketDbContext _context;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public DataSeeder(GreenTicketDbContext context)
+        public DataSeeder(GreenTicketDbContext context, IPasswordHasher<User> passwordHasher)
         {
             _context = context;
+            _passwordHasher = passwordHasher;
         }
-
-        // DELETE FROM [Image]
-        // DELETE FROM [Seat]
-        // DELETE FROM [Row]
-        // DELETE FROM [EventPerformer]
-        // DELETE FROM [Performer]
-        // DELETE FROM [Event]
-        // DELETE FROM [Section]
-        // DELETE FROM [Venue]
-        // DELETE FROM [EventSubCategory]
-        // DELETE FROM [EventCategory]
 
         public void Seed()
         {
             if (_context.Database.CanConnect())
             {
+                if (!_context.Roles.Any())
+                {
+                    var seederSQLFiles = Directory.GetFiles(@"..\GreenTicket-WebAPI\Entities\SeedSQL");
+                    foreach (var file in seederSQLFiles)
+                    {
+                        var sql = File.ReadAllText(file);
+                        _context.Database.ExecuteSqlRaw(sql);
+                    }
+                }
+
                 if (!_context.EventCategories.Any())
                 {
                     var eventCategories = getCategories();
                     _context.EventCategories.AddRange(eventCategories);
+                    _context.SaveChanges();
+                }
+
+                if (!_context.Countries.Any())
+                {
+                    var countries = getCountries();
+                    _context.Countries.AddRange(countries);
                     _context.SaveChanges();
                 }
 
@@ -62,8 +83,62 @@ namespace GreenTicket_WebAPI.Services
                     _context.Events.AddRange(events);
                     _context.SaveChanges();
                 }
+
+                if (!_context.Roles.Any())
+                {
+                    var roles = getRoles();
+                    _context.Roles.AddRange(roles);
+                    _context.SaveChanges();
+                }
+
+                if (!_context.Users.Any())
+                {
+                    var users = getUsers();
+                    _context.Users.AddRange(users);
+                    _context.SaveChanges();
+                }
+
             }
         }
+
+        private IEnumerable<Role> getRoles()
+        {
+            var roles = new List<Role>()
+            {
+                new Role() { Name = "Admin"},
+                new Role() { Name = "Moderator"},
+                new Role() { Name = "Customer"}
+            };
+
+            return roles;
+        }
+
+        private IEnumerable<User> getUsers()
+        {
+            var users = new List<User>();
+
+            var customerUser = new User()
+            {
+                Email = "jankowalski@test.pl",
+                FirstName = "Jan",
+                LastName = "Kowalski",
+                DateOfBirth = new DateTime(1990, 05, 10),
+                Address = new Address()
+                {
+                    CountryId = "PL",
+                    PostalCode = "80-863",
+                    CityID = getCityId("Gdańsk"),
+                    Street = "Wojska Polskiego",
+                    StreetNo = "41/3"
+                },
+                RoleId = getRoleByName("Customer")
+            };
+            var customerUserHashedPassword = _passwordHasher.HashPassword(customerUser, "Password1!");
+            customerUser.PasswordHash = customerUserHashedPassword;
+            users.Add(customerUser);
+            return users;
+        }
+
 
         private IEnumerable<Performer> getPerformers()
         {
@@ -158,6 +233,63 @@ namespace GreenTicket_WebAPI.Services
             return categories;
         }
 
+        private IEnumerable<Country> getCountries()
+        {
+            var countries = new List<Country>()
+            {
+                new Country() { Id = "AR", Name = "Argentina" },
+                new Country() { Id = "AT", Name = "Austria" },
+                new Country() { Id = "AU", Name = "Australia" },
+                new Country() { Id = "BE", Name = "Belgium" },
+                new Country() { Id = "BR", Name = "Brazil" },
+                new Country() { Id = "CA", Name = "Canada" },
+                new Country() { Id = "CH", Name = "Switzerland" },
+                new Country() { Id = "CN", Name = "China" },
+                new Country() { Id = "DE", Name = "Germany" },
+                new Country() { Id = "EG", Name = "Egypt" },
+                new Country() { Id = "ES", Name = "Spain" },
+                new Country() { Id = "FI", Name = "Finland" },
+                new Country() { Id = "FR", Name = "France" },
+                new Country() { Id = "GB", Name = "United Kingdom" },
+                new Country() { Id = "GR", Name = "Greece" },
+                new Country() { Id = "HK", Name = "HongKong" },
+                new Country() { Id = "HU", Name = "Hungary" },
+                new Country() { Id = "ID", Name = "Indonesia" },
+                new Country() { Id = "IE", Name = "Ireland" },
+                new Country() { Id = "IL", Name = "Israel" },
+                new Country() { Id = "IN", Name = "India" },
+                new Country() { Id = "IT", Name = "Italy" },
+                new Country() { Id = "JP", Name = "Japan" },
+                new Country() { Id = "KR", Name = "SouthKorea" },
+                new Country() { Id = "MX", Name = "Mexico" },
+                new Country() { Id = "MY", Name = "Malaysia" },
+                new Country() { Id = "NL", Name = "Netherlands" },
+                new Country() { Id = "NO", Name = "Norway" },
+                new Country() { Id = "NZ", Name = "New Zealand" },
+                new Country() { Id = "PE", Name = "Peru" },
+                new Country() { Id = "PH", Name = "Philippines" },
+                new Country() { Id = "PK", Name = "Pakistan" },
+                new Country() { Id = "PL", Name = "Poland" },
+                new Country() { Id = "PT", Name = "Portugal" },
+                new Country() { Id = "QA", Name = "Qatar" },
+                new Country() { Id = "RO", Name = "Romania" },
+                new Country() { Id = "RU", Name = "Russia" },
+                new Country() { Id = "SA", Name = "Saudi Arabia" },
+                new Country() { Id = "SE", Name = "Sweden" },
+                new Country() { Id = "SG", Name = "Singapore" },
+                new Country() { Id = "TH", Name = "Thailand" },
+                new Country() { Id = "TR", Name = "Turkey" },
+                new Country() { Id = "TW", Name = "Taiwan" },
+                new Country() { Id = "US", Name = "United States" },
+                new Country() { Id = "AE", Name = "United Arab Emirates" },
+                new Country() { Id = "VN", Name = "Vietnam" },
+                new Country() { Id = "ZA", Name = "SouthAfrica" },
+                new Country() { Id = "XX", Name = "OtherM" }
+            };
+
+            return countries;
+        }
+
         private IEnumerable<City> getCities()
         {
             var cities = new List<City>()
@@ -193,7 +325,7 @@ namespace GreenTicket_WebAPI.Services
                     "wypełniony wszechstronną przestrzenią dla muzyki.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "80-863",
                             CityID = getCityId("Gdańsk"),
                             Street = "Doki",
@@ -210,7 +342,7 @@ namespace GreenTicket_WebAPI.Services
                     "Koncerty Filharmonii Szczecin to propozycja doskonałej rozrywki na najwyższym poziomie, która na długo pozostanie w pamięci.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "70-515",
                             CityID = getCityId("Szczecin"),
                             Street = "Małopolska",
@@ -227,7 +359,7 @@ namespace GreenTicket_WebAPI.Services
                     "Instytucja jest operatorem nowoczesnego wielofunkcyjnego gmachu koncertowego we Wrocławiu.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "50-071",
                             CityID = getCityId("Wrocław"),
                             Street = "plac Wolności",
@@ -245,7 +377,7 @@ namespace GreenTicket_WebAPI.Services
                     "To wtedy oficjalnie został otwarty największy i najnowocześniejszy klub muzyczny w Trójmieście.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "80-834",
                             CityID = getCityId("Gdańsk"),
                             Street = "Świętego Ducha",
@@ -260,7 +392,7 @@ namespace GreenTicket_WebAPI.Services
                     "Orkiestra Symfoniczna FŁ została odznaczona Złotym Medalem Zasłużony Kulturze - Gloria Artis.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "90-135",
                             CityID = getCityId("Łódź"),
                             Street = "Prezydenta Gabriela Narutowicza",
@@ -278,7 +410,7 @@ namespace GreenTicket_WebAPI.Services
                     "służył on zarówno do ćwiczeń i zawodów szermierczych, jak i do wystawiania przedstawień.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "85-070",
                             CityID = getCityId("Bydgoszcz"),
                             Street = "Marszałka Ferdynanda Focha",
@@ -294,7 +426,7 @@ namespace GreenTicket_WebAPI.Services
                     "przyciągając 1 milion 300 tys. gości w ciągu 12 miesięcy. Arena jest największym stadionem w Polsce.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "03-901",
                             CityID = getCityId("Warszawa"),
                             Street = "Al. Ks. J. Poniatowskiego",
@@ -310,7 +442,7 @@ namespace GreenTicket_WebAPI.Services
                     "miejsc, do dyspozycji gości dostępnych jest 1500 miejsc postojowych, 4 ekrany multimedialne i 11 loży VIP-owskich (każda z tarasem).",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "94-020",
                             CityID = getCityId("Łódź"),
                             Street = "Al. ks. bp. Władysława Bandurskiego",
@@ -326,7 +458,7 @@ namespace GreenTicket_WebAPI.Services
                     "muzyków, twórców teatralnych i filmowych.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "00-019",
                             CityID = getCityId("Warszawa"),
                             Street = "Złota",
@@ -343,7 +475,7 @@ namespace GreenTicket_WebAPI.Services
                     "show na lodzie; gale, kongresy, bankiety, imprezy branżowe i plenerowe.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "31-571",
                             CityID = getCityId("Kraków"),
                             Street = "Stanisława Lema",
@@ -361,7 +493,7 @@ namespace GreenTicket_WebAPI.Services
                     "Chylińska i wielu innych znakomitych artystów.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "01-258",
                             CityID = getCityId("Warszawa"),
                             Street = "Fort Wola",
@@ -376,7 +508,7 @@ namespace GreenTicket_WebAPI.Services
                     "To także jeden z najnowocześniejszych i największych obiektów tego rodzaju w Polsce. Na Śląsku nie ma sobie równych.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "44-100",
                             CityID = getCityId("Gliwice"),
                             Street = "Akademicka",
@@ -392,7 +524,7 @@ namespace GreenTicket_WebAPI.Services
                     "spotkania z artystami, imprezy zamknięte, bankiety czy różnego rodzaju festiwale",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "90-554",
                             CityID = getCityId("Łódź"),
                             Street = "Łąkowa",
@@ -410,7 +542,7 @@ namespace GreenTicket_WebAPI.Services
                     "koncerty Chóru Aleksandrowa, czy występy Moscow City Ballet.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "00-449",
                             CityID = getCityId("Warszawa"),
                             Street = "Łazienkowska",
@@ -426,7 +558,7 @@ namespace GreenTicket_WebAPI.Services
                     "Obecnie w Klubie Palladium odbywają się rozmaite wydarzenia kulturalno-rozrywkowe – koncerty i spektakle teatralne.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "00-019",
                             CityID = getCityId("Warszawa"),
                             Street = "Złota",
@@ -443,7 +575,7 @@ namespace GreenTicket_WebAPI.Services
                     "Odbywają się w nim koncerty, kabarety, ale też bankiety, szkolenia i imprezy firmowe.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "81-729",
                             CityID = getCityId("Sopot"),
                             Street = "Al. Franciszka Mamuszki",
@@ -459,7 +591,7 @@ namespace GreenTicket_WebAPI.Services
                     "mieści się u zbiegu ulic Chrzanowskiego i Słowackiego. Stary Maneż Gdańsk jest miejscem niezwykle klimatycznym.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "80-257",
                             CityID = getCityId("Gdańsk"),
                             Street = "Juliusza Słowackiego",
@@ -476,7 +608,7 @@ namespace GreenTicket_WebAPI.Services
                     "często jednak organizowane są tu również wydarzenia kulturalno-rozrywkowe, takie jak koncerty i spektakle.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "87-100",
                             CityID = getCityId("Toruń"),
                             Street = "Generała Józefa Bema",
@@ -493,7 +625,7 @@ namespace GreenTicket_WebAPI.Services
                     "koncerty, widowiska muzyczne i kulturalne, targi oraz konferencje.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "80-344",
                             CityID = getCityId("Gdańsk"),
                             Street = "plac Dwóch Miast",
@@ -509,7 +641,7 @@ namespace GreenTicket_WebAPI.Services
                     "Modernizacja zakończyła się oddaniem do użytku obiektu spełniającego najwyższe wymogi stawiane zarówno stadionom piłkarskim, jak i stadionom lekkoatletycznym.",
                     Address= new Address()
                         {
-                            Country="Polska",
+                            CountryId="PL",
                             PostalCode = "41-500",
                             CityID = getCityId("Chorzów"),
                             Street = "Katowicka",
@@ -531,8 +663,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Electric Callboy",
                     Description="_electric1",
                     VenueId = getVenueId("Progresja"),
-                    StartDateTime=new DateTime(2023,04,10,20,00,00),
-                    EndDateTime=new DateTime(2023,04,10,23,30,00),
+                    StartDateTime=new DateTime(2023,10,10,20,00,00),
+                    EndDateTime=new DateTime(2023,10,10,23,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Hard/Heavy"),
                     EventPerformers = new List<EventPerformer>()
@@ -544,16 +676,18 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=1700,
                                 Price = 120m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(1700)
                             },
                             new Section()
                             {
                                 Name="VIP",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=300,
                                 Price=249m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(300)
                             }
                         },
                         Images = new List<Image>()
@@ -569,8 +703,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Electric Callboy",
                     Description="_electric1",
                     VenueId = getVenueId("Scena"),
-                    StartDateTime=new DateTime(2023,04,12,19,30,00),
-                    EndDateTime=new DateTime(2023,04,12,23,00,00),
+                    StartDateTime=new DateTime(2023,10,12,19,30,00),
+                    EndDateTime=new DateTime(2023,10,12,23,00,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Hard/Heavy"),
                     EventPerformers = new List<EventPerformer>()
@@ -582,16 +716,18 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=1800,
                                 Price = 120m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(1800)
                             },
                             new Section()
                             {
                                 Name="VIP",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=200,
                                 Price=249m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(200)
                             }
                         },
                         Images = new List<Image>()
@@ -606,8 +742,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Electric Callboy",
                     Description="_electric1",
                     VenueId = getVenueId("Narodowe Forum Muzyki we Wrocławiu"),
-                    StartDateTime=new DateTime(2023,04,14,19,30,00),
-                    EndDateTime=new DateTime(2023,04,14,23,00,00),
+                    StartDateTime=new DateTime(2023,10,14,19,30,00),
+                    EndDateTime=new DateTime(2023,10,14,23,00,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Hard/Heavy"),
                     EventPerformers = new List<EventPerformer>()
@@ -619,6 +755,7 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="Main hall",
+                                SectionType = SectionTypes.Seated,
                                 Capacity=960,
                                 Price = 120m,
                                 Rows = new List<Row>()
@@ -641,6 +778,7 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="VIP",
+                                SectionType = SectionTypes.Seated,
                                 Capacity=180,
                                 Price=249m,
                                 Rows = new List<Row>()
@@ -663,8 +801,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Sting",
                     Description="_sting1",
                     VenueId = getVenueId("TAURON Arena Kraków"),
-                    StartDateTime=new DateTime(2023,07,20,18,00,00),
-                    EndDateTime=new DateTime(2023,07,20,23,00,00),
+                    StartDateTime=new DateTime(2023,11,20,18,00,00),
+                    EndDateTime=new DateTime(2023,11,20,23,00,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Rock/Pop"),
                     EventPerformers = new List<EventPerformer>()
@@ -676,23 +814,26 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=5000,
                                 Price = 249m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(5000)
                             },
                             new Section()
                             {
                                 Name="Golden circle",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=1000,
                                 Price=349m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(1000)
                             },
                             new Section()
                             {
                                 Name="Golden circle Early Entry",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=500,
                                 Price=499m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(500)
                             },
                             getSeatingSection("A1",299m, 20, 14),
                             getSeatingSection("A2",299m, 20, 14),
@@ -721,8 +862,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Sting",
                     Description="_sting1",
                     VenueId = getVenueId("Atlas Arena"),
-                    StartDateTime=new DateTime(2023,07,22,18,00,00),
-                    EndDateTime=new DateTime(2023,07,22,23,00,00),
+                    StartDateTime=new DateTime(2023,11,22,18,00,00),
+                    EndDateTime=new DateTime(2023,11,22,23,00,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Rock/Pop"),
                      EventPerformers = new List<EventPerformer>()
@@ -734,23 +875,26 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=4500,
                                 Price = 279m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(4500)
                             },
                             new Section()
                             {
                                 Name="Golden circle",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=1500,
                                 Price=369m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(1500)
                             },
                             new Section()
                             {
                                 Name="Golden circle Early Entry",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=500,
                                 Price=519m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(500)
                             },
                             getSeatingSection("A",149m, 20, 14),
                             getSeatingSection("B",149m, 20, 14),
@@ -777,8 +921,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Sanah",
                     Description="_sanah1",
                     VenueId = getVenueId("Atlas Arena"),
-                    StartDateTime=new DateTime(2023,08,17,18,00,00),
-                    EndDateTime=new DateTime(2023,08,17,23,00,00),
+                    StartDateTime=new DateTime(2023,12,17,18,00,00),
+                    EndDateTime=new DateTime(2023,12,17,23,00,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Rock/Pop"),
                     EventPerformers = new List<EventPerformer>()
@@ -790,16 +934,18 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=9000,
                                 Price = 199m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(9000)
                             },
                             new Section()
                             {
                                 Name="Golden circle Early Entry",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=2000,
                                 Price=399m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(2000)
                             },
                             getSeatingSection("A",149m, 20, 14),
                             getSeatingSection("B",149m, 20, 14),
@@ -827,8 +973,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Sanah",
                     Description="_sanah1",
                     VenueId = getVenueId("TAURON Arena Kraków"),
-                    StartDateTime=new DateTime(2023,08,22,18,00,00),
-                    EndDateTime=new DateTime(2023,08,22,23,00,00),
+                    StartDateTime=new DateTime(2023,12,22,18,00,00),
+                    EndDateTime=new DateTime(2023,12,22,23,00,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Rock/Pop"),
                     EventPerformers = new List<EventPerformer>()
@@ -840,16 +986,18 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=9000,
                                 Price = 189m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(9000)
                             },
                             new Section()
                             {
                                 Name="Golden circle Early Entry",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=2000,
                                 Price=389m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(2000)
                             },
                             getSeatingSection("A1",199m, 20, 14),
                             getSeatingSection("A2",199m, 20, 14),
@@ -877,8 +1025,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Mistrzostwa Świata Super Enduro - Dzień I",
                     Description="_enduro1",
                     VenueId = getVenueId("Arena Gliwice"),
-                    StartDateTime=new DateTime(2023,03,18,17,30,00),
-                    EndDateTime=new DateTime(2023,03,18,22,30,00),
+                    StartDateTime=new DateTime(2024,03,18,17,30,00),
+                    EndDateTime=new DateTime(2024,03,18,22,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Sport", "Motor sports"),
                     EventPerformers = new List<EventPerformer>()
@@ -912,8 +1060,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Mistrzostwa Świata Super Enduro - Dzień II",
                     Description="_enduro1",
                     VenueId = getVenueId("Arena Gliwice"),
-                    StartDateTime=new DateTime(2023,03,19,17,30,00),
-                    EndDateTime=new DateTime(2023,03,19,22,30,00),
+                    StartDateTime=new DateTime(2024,03,19,17,30,00),
+                    EndDateTime=new DateTime(2024,03,19,22,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Sport", "Motor sports"),
                     EventPerformers = new List<EventPerformer>()
@@ -947,8 +1095,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Hot Wheels Monster Trucks Live Glow Party",
                     Description="_hotWheels1",
                     VenueId = getVenueId("TAURON Arena Kraków"),
-                    StartDateTime=new DateTime(2023,04,14,20,00,00),
-                    EndDateTime=new DateTime(2023,04,14,23,30,00),
+                    StartDateTime=new DateTime(2023,10,14,20,00,00),
+                    EndDateTime=new DateTime(2023,10,14,23,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Sport", "Motor sports"),
                     EventPerformers = new List<EventPerformer>()
@@ -983,8 +1131,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="POLSKA - ALBANIA, EL. MISTRZOSTW EUROPY 2024",
                     Description="_polandAlbania1",
                     VenueId = getVenueId("Stadion Narodowy (PGE Narodowy)"),
-                    StartDateTime=new DateTime(2023,03,27,20,45,00),
-                    EndDateTime=new DateTime(2023,03,27,22,45,00),
+                    StartDateTime=new DateTime(2024,03,27,20,45,00),
+                    EndDateTime=new DateTime(2024,03,27,22,45,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Sport", "Football"),
                     EventPerformers = new List<EventPerformer>()
@@ -1033,8 +1181,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="POLSKA - WYSPY OWCZE, EL. MISTRZOSTW EUROPY 2024",
                     Description="_polandFaroeIslands1",
                     VenueId = getVenueId("Stadion Narodowy (PGE Narodowy)"),
-                    StartDateTime=new DateTime(2023,09,07,20,45,00),
-                    EndDateTime=new DateTime(2023,09,07,22,45,00),
+                    StartDateTime=new DateTime(2023,11,07,20,45,00),
+                    EndDateTime=new DateTime(2023,11,07,22,45,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Sport", "Football"),
                     EventPerformers = new List<EventPerformer>()
@@ -1083,8 +1231,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Alpha Wolf + King 810, Ten56, Xile",
                     Description="_alphaWolf1",
                     VenueId = getVenueId("Klub Wytwórnia"),
-                    StartDateTime=new DateTime(2023,09,24,20,00,00),
-                    EndDateTime=new DateTime(2023,09,24,23,00,00),
+                    StartDateTime=new DateTime(2024,09,24,20,00,00),
+                    EndDateTime=new DateTime(2024,09,24,23,00,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Hard/Heavy"),
                     EventPerformers = new List<EventPerformer>()
@@ -1099,9 +1247,10 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=1600,
                                 Price = 99m,
-                                IsStanding = true
+                                StandingPlaces = getStandingPlaces(1600)
                             }
                         },
                         Images = new List<Image>()
@@ -1164,8 +1313,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Metallica symfonicznie",
                     Description="_metallica1",
                     VenueId = getVenueId("Filharmonia im. Mieczysława Karłowicza w Szczecinie"),
-                    StartDateTime=new DateTime(2023,06,16,20,00,00),
-                    EndDateTime=new DateTime(2023,06,16,23,00,00),
+                    StartDateTime=new DateTime(2023,10,16,20,00,00),
+                    EndDateTime=new DateTime(2023,10,16,23,00,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Classical music"),
                     EventPerformers = new List<EventPerformer>()
@@ -1188,8 +1337,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Metallica symfonicznie",
                     Description="_metallica1",
                     VenueId = getVenueId("Filharmonia Łódzka"),
-                    StartDateTime=new DateTime(2023,06,22,20,00,00),
-                    EndDateTime=new DateTime(2023,06,22,23,00,00),
+                    StartDateTime=new DateTime(2023,10,22,20,00,00),
+                    EndDateTime=new DateTime(2023,10,22,23,00,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Classical music"),
                     EventPerformers = new List<EventPerformer>()
@@ -1212,8 +1361,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Zenon Martyniuk",
                     Description="_martyniuk1",
                     VenueId = getVenueId("Arena Gliwice"),
-                    StartDateTime=new DateTime(2023,07,07,17,30,00),
-                    EndDateTime=new DateTime(2023,07,07,22,30,00),
+                    StartDateTime=new DateTime(2023,10,07,17,30,00),
+                    EndDateTime=new DateTime(2023,10,07,22,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Disco/Dance"),
                     EventPerformers = new List<EventPerformer>()
@@ -1225,16 +1374,18 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=4000,
                                 Price = 149m,
-                                IsStanding = true,
+                                StandingPlaces = getStandingPlaces(4000)
                             },
                             new Section()
                             {
                                 Name="Golden circle",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=2000,
                                 Price=249m,
-                                IsStanding = true,
+                                StandingPlaces = getStandingPlaces(2000)
                             }
                         },
                         Images = new List<Image>()
@@ -1249,8 +1400,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Gala Disco vol. 8",
                     Description="_disco1",
                     VenueId = getVenueId("COS Torwar"),
-                    StartDateTime=new DateTime(2023,08,17,18,30,00),
-                    EndDateTime=new DateTime(2023,08,17,23,30,00),
+                    StartDateTime=new DateTime(2023,11,17,18,30,00),
+                    EndDateTime=new DateTime(2023,11,17,23,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Disco/Dance"),
                     EventPerformers = new List<EventPerformer>()
@@ -1263,8 +1414,10 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=7000,
-                                Price = 89m
+                                Price = 89m,
+                                StandingPlaces = getStandingPlaces(7000)
                             }
                         },
                         Images = new List<Image>()
@@ -1279,8 +1432,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Ethno Jazz Festival: Wirujący Derwisze",
                     Description="_etno1",
                     VenueId = getVenueId("Parlament"),
-                    StartDateTime=new DateTime(2023,10,24,18,30,00),
-                    EndDateTime=new DateTime(2023,10,24,23,30,00),
+                    StartDateTime=new DateTime(2024,01,24,18,30,00),
+                    EndDateTime=new DateTime(2024,01,24,23,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Jazz"),
                     EventPerformers = new List<EventPerformer>()
@@ -1292,8 +1445,10 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=450,
-                                Price = 49m
+                                Price = 49m,
+                                StandingPlaces = getStandingPlaces(450)
                             }
                         },
                         Images = new List<Image>()
@@ -1322,8 +1477,10 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=350,
-                                Price = 99m
+                                Price = 99m,
+                                StandingPlaces = getStandingPlaces(350)
                             }
                         },
                         Images = new List<Image>()
@@ -1338,8 +1495,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="The Legend – Powrót Legendy",
                     Description="_legend1",
                     VenueId = getVenueId("Palladium"),
-                    StartDateTime=new DateTime(2023,05,05,20,00,00),
-                    EndDateTime=new DateTime(2023,05,05,23,30,00),
+                    StartDateTime=new DateTime(2024,05,05,20,00,00),
+                    EndDateTime=new DateTime(2024,05,05,23,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Concerts", "Rap/Hip-Hop"),
                     EventPerformers = new List<EventPerformer>()
@@ -1351,8 +1508,10 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="General Admission",
+                                SectionType = SectionTypes.Standing,
                                 Capacity=250,
-                                Price = 109m
+                                Price = 109m,
+                                StandingPlaces = getStandingPlaces(250)
                             }
                         },
                         Images = new List<Image>()
@@ -1367,8 +1526,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Przekręt (nie)doskonały",
                     Description="_przekret1",
                     VenueId = getVenueId("Gdański Teatr Szekspirowski"),
-                    StartDateTime=new DateTime(2023,06,06,20,00,00),
-                    EndDateTime=new DateTime(2023,06,06,23,30,00),
+                    StartDateTime=new DateTime(2024,06,06,20,00,00),
+                    EndDateTime=new DateTime(2024,06,06,23,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Culture", "Theatre"),
                     EventPerformers = new List<EventPerformer>()
@@ -1392,8 +1551,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Przekręt (nie)doskonały",
                     Description="_przekret1",
                     VenueId = getVenueId("Gdański Teatr Szekspirowski"),
-                    StartDateTime=new DateTime(2023,06,08,20,00,00),
-                    EndDateTime=new DateTime(2023,06,08,23,30,00),
+                    StartDateTime=new DateTime(2024,06,08,20,00,00),
+                    EndDateTime=new DateTime(2024,06,08,23,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Culture", "Theatre"),
                     EventPerformers = new List<EventPerformer>()
@@ -1417,8 +1576,8 @@ namespace GreenTicket_WebAPI.Services
                     Name="Narodowy Balet Gruzji - Sukhishvili",
                     Description="_sukhishvili1",
                     VenueId = getVenueId("Narodowe Forum Muzyki we Wrocławiu"),
-                    StartDateTime=new DateTime(2023,07,25,20,00,00),
-                    EndDateTime=new DateTime(2023,07,25,23,30,00),
+                    StartDateTime=new DateTime(2023,11,25,20,00,00),
+                    EndDateTime=new DateTime(2023,11,25,23,30,00),
                     CreateDateTime= new RandomDate().Date(),
                     EventSubCategoryId= getEventSubcategoryId("Culture", "Ballet/Dance"),
                     EventPerformers = new List<EventPerformer>()
@@ -1430,6 +1589,7 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="Main hall",
+                                SectionType = SectionTypes.Seated,
                                 Capacity=960,
                                 Price = 79m,
                                 Rows = new List<Row>()
@@ -1452,6 +1612,7 @@ namespace GreenTicket_WebAPI.Services
                             new Section()
                             {
                                 Name="VIP",
+                                SectionType = SectionTypes.Seated,
                                 Capacity=180,
                                 Price=249m,
                                 Rows = new List<Row>()
@@ -1496,6 +1657,31 @@ namespace GreenTicket_WebAPI.Services
                 }
             };
             return events;
+        }
+
+        private ICollection<StandingPlace> getStandingPlaces(int noOfPlaces)
+        {
+            var standingPlaces = new List<StandingPlace>();
+
+            for (int i = 1; i <= noOfPlaces; i++)
+            {
+                standingPlaces.Add(new StandingPlace() {});
+            }
+
+            return standingPlaces;
+        }
+
+        private int getRoleByName(string roleName)
+        {
+            var role = _context
+                .Roles
+                .AsNoTracking()
+                .FirstOrDefault(v => v.Name == roleName);
+
+            if (role is null)
+                throw new Exception($"Role '{roleName}' not found");
+
+            return role.Id;
         }
 
         private int getCityId(string cityName)
@@ -1603,6 +1789,7 @@ namespace GreenTicket_WebAPI.Services
             return new Section()
             {
                 Name = name,
+                SectionType = SectionTypes.Seated,
                 Capacity = sumOfPlaces,
                 Price = price,
                 Rows = rows

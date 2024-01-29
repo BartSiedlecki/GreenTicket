@@ -1,4 +1,4 @@
-﻿namespace PremiumAPI.Core
+﻿namespace GreenTicket_WebAPI.Core.Settings
 {
     public class AppSettings
     {

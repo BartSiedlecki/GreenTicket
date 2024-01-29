@@ -16,7 +16,7 @@ export default function MainPageNewsletter() {
     };
 
     const handleSubmit = (val: NewsletterFormModel, actions: FormikHelpers<NewsletterFormModel>) => {
-        console.log(val);
+
     }
 
     return (

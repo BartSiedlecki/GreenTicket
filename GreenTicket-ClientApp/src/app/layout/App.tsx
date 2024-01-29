@@ -3,7 +3,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { MyVerticallyCenteredModal } from "../../features/Shared/Modal";
 import { Route, Routes } from "react-router-dom";
 import MainPage from "../../features/Main/MainPage";
-import { NavBar } from "./NavBar/NavBar";
 import Footer from "./Footer/Footer";
 import './../../i18Next'
 import { ToastContainer } from "react-toastify";
@@ -14,11 +13,15 @@ import PartnershipPage from "../../features/InfoPages/PartnershipPage";
 import TermsAndConditionsPage from "../../features/InfoPages/TermsAndConditionsPage";
 import PrivacyPolicyPage from "../../features/InfoPages/PrivacyPolicyPage";
 import LegalNoticePage from "../../features/InfoPages/LegalNoticePage";
+import RegisterPage from "../../features/RegisterPage/RegisterPage";
+import MainNavBar from "./NavBar/MainNavBar";
+import OrderHistoryPage from "../../features/OrderHistory/OrderHistoryPage";
+import BasketPage from "../../features/BasketPage/BasketPage";
+import PaymentPage from "../../features/PaymentPage/PaymentPage";
+import OrderDetailsPage from "../../features/OrderHistory/OrderDetailsPage";
 
 
 function App() {
-
-
 
     return (
         <div className="main">
@@ -26,11 +29,11 @@ function App() {
             <ToastContainer pauseOnHover position="bottom-right" />
                 <Row className="w-100 mx-0">
                     <Col className="px-0">
-                        <NavBar />
+                        <MainNavBar />
                     </Col>
                 </Row>
-                <Row>
-                    <Col >
+                <Row style={{ minHeight: "70vh" }}>
+                    <Col>
                         <Container fluid className="px-0">
                         <Routes>
                                 <Route path='*' element={<MainPage />} />
@@ -41,6 +44,11 @@ function App() {
                                 <Route path='/terms-and-conditions' element={<TermsAndConditionsPage />} />
                                 <Route path='/privacy-policy' element={<PrivacyPolicyPage />} />
                                 <Route path='/legal-notice' element={<LegalNoticePage />} />
+                                <Route path='/register' element={<RegisterPage />} />
+                                <Route path='/orders' element={<OrderHistoryPage />} />
+                                <Route path='/orders/:orderId' element={<OrderDetailsPage />} />
+                                <Route path='/payment/:orderId' element={<PaymentPage />} />
+                                <Route path='/basket' element={<BasketPage />} />
                         </Routes>
                         </Container>
                     </Col>

@@ -13,6 +13,18 @@ import { EventPageDto } from '../models/eventPageDto';
 import { SectionDto } from '../models/sectionDto';
 import { CityDto } from '../models/cityDto';
 import { EventFilterPageDto } from '../models/eventFilterPageDto';
+import { LoginUserDto } from '../models/loginUserDto';
+import { LoggedUserDto } from '../models/loggedUserDto';
+import { Country } from '../models/country';
+import { RegisterUserDto } from '../models/registerUserDto';
+import { LogoutUserDto } from '../models/logoutUserDto';
+import { CreateAddressDto } from '../models/createAddressDto';
+import { BasketUserDetailsDto } from '../models/basketUserDetailsDto';
+import { PaymentOrderDto } from '../models/paymentOrderDto';
+import { OrderCreateDto } from '../models/orderCreateDto';
+import { CreatePaymentDto } from '../models/createPaymentDto';
+import { OrderListItemDto } from '../models/orderListItemDto';
+import { OrderDetailsDto } from '../models/orderDetailsDto';
 
 axios.defaults.baseURL = baseApiUrl;
 axios.defaults.withCredentials = true;
@@ -99,7 +111,7 @@ axios.interceptors.response.use(
                 }
                 break;
             case 404:
-                const message404 = i18next.t("apiErrorNotFoundInfo").toString()
+                const message404 = i18next.t("ResourceNotFound").toString()
                 toast.error(message404);
                 errors.push(message404);
                 throw errors.flat();
@@ -142,9 +154,19 @@ const requests = {
 
 createAuthRefreshInterceptor(axios, refreshAuthLogic);
 
+const Accounts = {
+    login: (user: LoginUserDto) => requests.post<LoggedUserDto>('/account/login', user),
+    logout: (dto: LogoutUserDto) => requests.post('/account/logout', dto),
+    register: (user: RegisterUserDto) => requests.post('/account/register', user),
+}
 
 const Addresses = {
-    getNavigation: () => requests.get<CityDto[]>("/address/city/navigation")
+    getNavigation: () => requests.get<CityDto[]>("/address/city/navigation"),
+    add: (dto: CreateAddressDto) => requests.post("/address", dto)
+}
+
+const Countries = {
+    getList: () => requests.get<Country[]>("/country") 
 }
 
 const Categories = {
@@ -161,22 +183,51 @@ const Events = {
 
 const ImagePath = (fileName: string) => `${baseApiUrl}/image?fileName=${fileName}`;
 
+
+const Orders = {
+    getList: (userId: string) => requests.get<OrderListItemDto[]>(`/user/${userId}/order`),
+    getDetails: (userId: string, orderId: string) => requests.get<OrderDetailsDto>(`/user/${userId}/order/${orderId}`),
+    create: (dto: OrderCreateDto) => requests.post<string>(`/user/${dto.userId}/order`, dto),
+    getForPayment: (userId: string, orderId: string) => requests.get<PaymentOrderDto>(`/user/${userId}/order/${orderId}/payment`),
+    makePayment: (userId: string, dto: CreatePaymentDto) => requests.post<string>(`/user/${userId}/order/${dto.orderId}/payment`, dto)
+}
+
 const Seats = {
-    reserve: (eventId: number, sectionId: number, seatId: string, sesstionId: string) => requests.putWithoutBody(`/event/${eventId}/section/${sectionId}/seat/${seatId}/reservation?session=${sesstionId}`),
-    cancelReservationSeat: (eventId: number, sectionId: number, seatId: string, sesstionId: string) => requests.putWithoutBody(`/event/${eventId}/section/${sectionId}/seat/${seatId}/reservation/cancel?session=${sesstionId}`)
+    reserve: (eventId: number, sectionId: number, seatId: string, sessionId: string) => requests.putWithoutBody<Date>(`/event/${eventId}/section/${sectionId}/seat/${seatId}/reservation?session=${sessionId}`),
+    cancelReservationSeat: (eventId: number, sectionId: number, seatId: string, sessionId: string) => requests.putWithoutBody(`/event/${eventId}/section/${sectionId}/seat/${seatId}/reservation/cancel?session=${sessionId}`)
 }
 
 const Sections = {
-    getPreview: (eventId: number, sectionId: number, sesstionId: string) => requests.get<SectionDto>(`/event/${eventId}/section/${sectionId}?session=${sesstionId}`)
+    getPreview: (eventId: number, sectionId: number, sessionId: string) => requests.get<SectionDto>(`/event/${eventId}/section/${sectionId}?session=${sessionId}`)
+}
+
+const StandingPlaces = {
+    reserve: (eventId: number, sectionId: number, sessionId: string) => requests.putWithoutBody<Date>(`/event/${eventId}/section/${sectionId}/standing-place/reservation?session=${sessionId}`),
+    cancelReservation: (eventId: number, sectionId: number, sessionId: string) => requests.putWithoutBody(`/event/${eventId}/section/${sectionId}/standing-place/cancel?session=${sessionId}`),
+}
+
+const Tickets = {
+    getOrderTickets: (userId: string, orderId: string) => requests.getFileById(`/user/${userId}/order/${orderId}/ticket/print`),
+    getSingleTicket: (userId: string, orderId: string, ticketId: string) => requests.getFileById(`/user/${userId}/order/${orderId}/ticket/${ticketId}/print`)
+}
+
+const Users = {
+    details: (userId: string, datatype: string) => requests.get<BasketUserDetailsDto>(`/user/${userId}/details?datatype=${datatype}`)
 }
 
 const agent = {
+    Accounts,
     Addresses,
     Categories,
+    Countries,
     Events,
     ImagePath,
+    Orders,
     Seats,
-    Sections
+    Sections,
+    StandingPlaces,
+    Tickets,
+    Users
 }
 
 export default agent;

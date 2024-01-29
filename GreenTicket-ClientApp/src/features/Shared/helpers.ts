@@ -18,6 +18,10 @@ export function isNumeric(value: string | undefined) {
     return /^\d+$/.test(value);
 }
 
+export function addLeadingZero(num: number) {
+    return String(num).padStart(2, '0')
+}
+
 function replacePolishSigns(text: string) {
     const expression: RegExp = /[ąćęłńóśźż]/gi;
 

@@ -25,6 +25,8 @@
     "react-bootstrap-icons": "^1.10.2",
     "react-bootstrap-submenu": "^2.0.0",
     "react-bootstrap-typeahead": "^6.0.0",
+    "react-countdown": "^2.3.5",
+    "react-datepicker": "^4.8.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^12.1.1",
     "react-icons": "^4.7.1",
@@ -61,6 +63,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-datepicker": "^4.11.2",
     "eslint-config-react-app": "^7.0.1",
     "jest-editor-support": "^30.3.1"
   }

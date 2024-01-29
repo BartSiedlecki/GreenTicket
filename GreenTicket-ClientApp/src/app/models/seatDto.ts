@@ -1,5 +1,5 @@
 export interface SeatDto {
-    seatId: string;
+    id: string;
     number: number;
     customPrice: number;
     restrictionDescpiption: string;

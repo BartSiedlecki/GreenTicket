@@ -1,6 +1,4 @@
-﻿using GreenTicket_WebAPI.Services.Interfaces;
-
-namespace GreenTicket_WebAPI.Services
+﻿namespace GreenTicket_WebAPI.Services.Interfaces
 {
     public class ImageService : IImageService
     {

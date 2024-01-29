@@ -5,7 +5,7 @@ import { DashSquare, PlusSquare } from 'react-bootstrap-icons';
 import { useTranslation } from 'react-i18next';
 import { SectionDto } from '../../app/models/sectionDto';
 import { useStore } from '../../app/store/store';
-import AddingTicktsModule from './AddinfTicketsModule';
+import AddingTicktsModule from './AddingTicketsModule';
 
 interface Props {
     sections: SectionDto[]

@@ -1,5 +1,5 @@
-import { observer } from 'mobx-react-lite';
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { DashSquare, PlusSquare } from 'react-bootstrap-icons';
 import { useTranslation } from 'react-i18next';
 import { SelectedSeatDto } from '../../app/models/selectedSeatDto';
@@ -23,9 +23,7 @@ export default observer(function AddingTicktsModule({ sectionId, sectionPrice, s
             let newSelectedTickets2 = selectedTickets.filter(s => s.sectionId === sectionId);
             newSelectedTickets2.shift();
 
-
             setSelectedTickets(newSelectedTickets.concat(newSelectedTickets2))
-
         } else {
             let newSelectedTickets = selectedTickets;
 
@@ -35,6 +33,7 @@ export default observer(function AddingTicktsModule({ sectionId, sectionPrice, s
                 rowName: undefined,
                 seatNo: undefined,
                 price: sectionPrice,
+                eventName: event!.name!,
                 sectionId: sectionId!,
                 sectionName: sectionName
             }

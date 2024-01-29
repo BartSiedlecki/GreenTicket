@@ -18,10 +18,10 @@ namespace GreenTicket_WebAPI.Controllers
         }
 
         [HttpPut("{seatId}/reservation")]
-        public async Task<ActionResult> ReserveSeat([FromRoute] int eventId, [FromRoute] int sectionId, [FromRoute] string seatId, [FromQuery] string session)
+        public async Task<ActionResult<DateTime>> ReserveSeat([FromRoute] int eventId, [FromRoute] int sectionId, [FromRoute] string seatId, [FromQuery] string session)
         {
-            await _service.ReserveTicketAsync(eventId, sectionId, seatId, session);
-            return NoContent();
+            var reservedTo = await _service.ReserveTicketAsync(eventId, sectionId, seatId, session);
+            return Ok(reservedTo);
         }
 
         [HttpPut("{seatId}/reservation/cancel")]

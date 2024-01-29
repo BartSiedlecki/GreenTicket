@@ -13,9 +13,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\app\API\" />
-    <Folder Include="src\app\models\validators\" />
     <Folder Include="src\app\store\" />
     <Folder Include="src\data\locales\" />
+    <Folder Include="src\data\img\" />
     <Folder Include="src\features\InfoPages\" />
+    <Folder Include="src\features\PaymentPage\" />
+    <Folder Include="src\features\RegisterPage\" />
+    <Folder Include="src\features\SummaryPage\" />
   </ItemGroup>
 </Project>

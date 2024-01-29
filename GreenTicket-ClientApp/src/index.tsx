@@ -5,6 +5,8 @@ import { CustomRouter } from './app/customRouter/CustomRouter';
 import App from './app/layout/App';
 import './app/layout/style.css';
 import { store, StoreContext } from './app/store/store';
+import "react-datepicker/dist/react-datepicker.css";
+
 
 
 

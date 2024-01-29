@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
-import React, { useEffect, useRef } from 'react';
-import { Accordion, Button, Col, Container, Form, Row } from 'react-bootstrap';
-import { Calendar3, GeoAltFill, InfoCircle, UmbrellaFill } from 'react-bootstrap-icons';
+import React, { useEffect } from 'react';
+import { Button, Col, Container, Row } from 'react-bootstrap';
+import { Calendar3, GeoAltFill, InfoCircle } from 'react-bootstrap-icons';
 import { useParams } from 'react-router-dom';
 import { useStore } from '../../app/store/store';
 import { isNumeric } from '../Shared/helpers';
@@ -12,15 +12,14 @@ import SeatingSectionsModule from './SeatingSectionsModule';
 import StandingSectionsModule from './StandingSectionsModule';
 import SummaryPanel from './SummaryPanel';
 import { useTranslation } from 'react-i18next';
-import { getNewGuid } from '../Shared/GUID';
+import customHistory from '../..';
 
 export default observer(function EventPage() {
     const { t } = useTranslation();
     const { eventId } = useParams<{ eventId: string }>();
-    const { eventPageStore } = useStore();
-    const { loadingEvent, event, loadEvent, checkSessionId } = eventPageStore;
-
-    const isInitialMount = useRef(true);
+    const { eventPageStore, basketStore } = useStore();
+    const { event, loadEvent, checkSessionId } = eventPageStore;
+    const { tickets: ticketsInBasket, isBasketEmpty } = basketStore;
 
     useEffect(() => {
         if (!(event?.id)) {
@@ -32,8 +31,13 @@ export default observer(function EventPage() {
     }, [eventId]);
 
 
+    const summaryTickets = ticketsInBasket.filter(t => t.ticketEvent.id === Number(eventId))
     const standingSections = event?.sections.filter(s => s.isStanding === true);
     const seatingSections = event?.sections.filter(s => s.isStanding === false);
+
+    const onBuyButtonClicked = () => {
+        customHistory.push("/basket");
+    };
 
     return (
         <>
@@ -82,11 +86,16 @@ export default observer(function EventPage() {
                                 <Image fluid src={agent.ImagePath(event.seatingPlanImage)} alt={`${event.name} seating plan`} />
                             </Col>
                         </Row>
-                        <SummaryPanel />
+                        <SummaryPanel tickets={summaryTickets} />
                         <Row>
                             <Col xs={12} className="text-end pe-4">
-                                <Button variant="success" size="lg">
-                                    Large button
+                                <Button
+                                    id="btn-buy-tickets"
+                                    disabled={isBasketEmpty()}
+                                    variant="success"
+                                    size="lg"
+                                    onClick={() => onBuyButtonClicked()}>
+                                    {t("Buy")}
                                 </Button>
                             </Col>
                         </Row>

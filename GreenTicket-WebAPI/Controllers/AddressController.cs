@@ -1,4 +1,5 @@
-﻿using GreenTicket_WebAPI.Services.Interfaces;
+﻿using GreenTicket_WebAPI.Models;
+using GreenTicket_WebAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,5 +23,6 @@ namespace GreenTicket_WebAPI.Controllers
             var cities = await _service.GetNavigationCitiesAsync();
             return Ok(cities);
         }
+
     }
 }

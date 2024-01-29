@@ -1,15 +1,18 @@
-import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { Badge, Col, ListGroup, Row } from 'react-bootstrap';
+import { observer } from 'mobx-react-lite';
+import { Col, ListGroup, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { SelectedSeatDto } from '../../app/models/selectedSeatDto';
-import { useStore } from '../../app/store/store';
+import { BasketTicket } from '../../app/models/basketTicket';
+import { serviceCostRate } from '../../config';
 
-export default observer(function SummaryPanel() {
+interface Props {
+    tickets: BasketTicket[];
+    }
+
+export default observer(function SummaryPanel({ tickets } : Props) {
     const { t } = useTranslation();
-    const { eventPageStore: { selectedTickets } } = useStore();
 
-    const getLi = (index: number, ticket: SelectedSeatDto) => {
+    const ListItem = (index: number, ticket: BasketTicket) => {
         return ticket.isStanding ?
             <ListGroup.Item key={index} as="li" className="d-flex justify-content-between align-items-start" >
                 <div className="ms-2 me-auto">
@@ -23,7 +26,7 @@ export default observer(function SummaryPanel() {
             :
             <ListGroup.Item key={index} as="li" className="d-flex justify-content-between align-items-start" >
                 <div className="ms-2 me-auto">
-                    {index + 1}. {t("Section")} {ticket.sectionName}, {t("row")} {ticket.rowName}, {t("seat")} {ticket.seatNo} ({t("seating")})
+                    {index + 1}. <b>{ticket.ticketEvent.name}</b>, {ticket.sectionName}, {t("row")} {ticket.rowName}, {t("seat")} {ticket.seatNo} ({t("seating")})
                 </div>
                 <span>
                     {ticket.price}zł
@@ -31,11 +34,9 @@ export default observer(function SummaryPanel() {
             </ListGroup.Item>
     }
 
-
-    const ticketPricesSum = selectedTickets.reduce((acc, o) => acc + o.price, 0);
-    const serviceCost = ticketPricesSum * 0.03;
+    const ticketPricesSum = tickets.reduce((acc, o) => acc + o.price, 0);
+    const serviceCost = ticketPricesSum * serviceCostRate;
     const totalcost = ticketPricesSum + serviceCost
-
 
     return (
         <Row className="border rounded shadow my-4">
@@ -43,9 +44,9 @@ export default observer(function SummaryPanel() {
                 <p className="h3 ps-2 mb-0 fw-bold">{t("Summary")}:</p>
             </Col>
             <Col xs={12} className="px-3 text-left">
-                <ListGroup variant="flush">{t("ReservedTickets")}
-                    {selectedTickets.map((ticket, index) => (
-                        getLi(index, ticket)
+                <ListGroup variant="flush">
+                    {tickets.map((ticket, index) => (
+                        ListItem(index, ticket)
                     ))}
                     <ListGroup.Item as="li" className="d-flex justify-content-between align-items-start py-1" style={{ border: "none" }} >
                         <div className="ms-2 me-auto"></div>
@@ -66,7 +67,7 @@ export default observer(function SummaryPanel() {
                         </span>
 
                     </ListGroup.Item>
-                    <ListGroup.Item as="li" className="d-flex justify-content-between align-items-start py-1" style={{border: "none"}} >
+                    <ListGroup.Item as="li" className="d-flex justify-content-between align-items-start py-1" style={{ border: "none" }} >
                         <div className="ms-2 me-auto">
 
                         </div>
@@ -79,7 +80,7 @@ export default observer(function SummaryPanel() {
                         <div className="ms-2 me-auto">
 
                         </div>
-                        <span style={{fontSize: "0.8em"}}>
+                        <span style={{ fontSize: "0.8em" }}>
                             ({t("includingTax")})
                         </span>
 

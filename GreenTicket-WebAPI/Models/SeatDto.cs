@@ -4,7 +4,7 @@ namespace GreenTicket_WebAPI.Models
 {
     public class SeatDto
     {
-        public Guid SeatId { get; set; }
+        public Guid Id { get; set; }
         public int Number { get; set; }
         public Decimal? CustomPrice { get; set; }
         public string? RestrictionDescpiption { get; set; }

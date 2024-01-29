@@ -96,6 +96,10 @@ a.footer-link {
         color: #a5b1b1;
     }
 
+.c-pointer {
+    cursor: pointer;
+}
+
 .hr-sect {
     display: flex;
     flex-basis: 100%;
@@ -238,4 +242,32 @@ a.footer-link {
 #nav-categories,
 #nav-cities {
     color: white;
+}
+
+@media (min-width: 768px) {
+    .border-md-start {
+        border-left: 1px solid #B8B8B8;
+    }
+}
+
+.fs09em {
+    font-size: 0.9em;
+}
+
+.fs101em {
+    font-size: 1.1em;
+}
+
+.fs103em {
+    font-size: 1.3em;
+}
+
+.basket-blinking {
+    animation: basketblinker 1.8s linear infinite;
+}
+
+@keyframes basketblinker {
+    50% {
+        color: #FF0000;
+    }
 }

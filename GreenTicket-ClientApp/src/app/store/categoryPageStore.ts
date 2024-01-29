@@ -1,5 +1,4 @@
 import { makeAutoObservable } from "mobx";
-import { idText } from "typescript";
 import agent from "../API/agent";
 import { CityDto } from "../models/cityDto";
 import { EventCategoryNavDto } from "../models/eventCategoryNavDto";

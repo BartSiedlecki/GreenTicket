@@ -33,10 +33,9 @@ namespace GreenTicketWebAPI.Migrations
                     b.Property<int>("CityID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Country")
+                    b.Property<string>("CountryId")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PostalCode")
                         .IsRequired()
@@ -53,15 +52,18 @@ namespace GreenTicketWebAPI.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<int>("VenueID")
+                    b.Property<int?>("VenueID")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CityID");
 
+                    b.HasIndex("CountryId");
+
                     b.HasIndex("VenueID")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[VenueID] IS NOT NULL");
 
                     b.ToTable("Address", (string)null);
                 });
@@ -82,6 +84,21 @@ namespace GreenTicketWebAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("City", (string)null);
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Country", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Country", (string)null);
                 });
 
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.Event", b =>
@@ -245,6 +262,109 @@ namespace GreenTicketWebAPI.Migrations
                     b.ToTable("Newsletter", (string)null);
                 });
 
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderNo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Order", null, t =>
+                        {
+                            t.HasTrigger("SetOrderNoOnInsert");
+                        });
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.OrderStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApprovedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedById");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderStatus", (string)null);
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsSucceed")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserRecognitionDetail")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Payment", (string)null);
+                });
+
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.Performer", b =>
                 {
                     b.Property<int>("Id")
@@ -261,6 +381,53 @@ namespace GreenTicketWebAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Performer", (string)null);
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Restriction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("PriceReduction")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<int>("RestrictionType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("SeatId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("StandingPlaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SeatId");
+
+                    b.HasIndex("StandingPlaceId");
+
+                    b.ToTable("Restriction", (string)null);
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Role", (string)null);
                 });
 
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.Row", b =>
@@ -286,12 +453,9 @@ namespace GreenTicketWebAPI.Migrations
 
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.Seat", b =>
                 {
-                    b.Property<Guid>("SeatId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal?>("CustomPrice")
-                        .HasColumnType("decimal(19, 4)");
 
                     b.Property<int>("Number")
                         .HasColumnType("int");
@@ -302,16 +466,13 @@ namespace GreenTicketWebAPI.Migrations
                     b.Property<string>("ReservationSessionId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RestrictionDescpiption")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<Guid>("RowId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("Sold")
                         .HasColumnType("bit");
 
-                    b.HasKey("SeatId");
+                    b.HasKey("Id");
 
                     b.HasIndex("RowId");
 
@@ -332,9 +493,6 @@ namespace GreenTicketWebAPI.Migrations
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsStanding")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -343,11 +501,124 @@ namespace GreenTicketWebAPI.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(19, 4)");
 
+                    b.Property<int>("SectionType")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
 
                     b.ToTable("Section", (string)null);
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.StandingPlace", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ReservationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReservationSessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Sold")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SectionId");
+
+                    b.ToTable("StandingPlace", (string)null);
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Ticket", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("CancellationDate")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Cancelled")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("QrCode")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SeatId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("StandingPlaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Validated")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("ValidationDate")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderID");
+
+                    b.HasIndex("SeatId");
+
+                    b.HasIndex("StandingPlaceId");
+
+                    b.ToTable("Ticket", (string)null);
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AddressId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("User", (string)null);
                 });
 
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.Venue", b =>
@@ -384,13 +655,19 @@ namespace GreenTicketWebAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GreenTicket_WebAPI.Entities.Venue", "Venue")
-                        .WithOne("Address")
-                        .HasForeignKey("GreenTicket_WebAPI.Entities.Address", "VenueID")
+                    b.HasOne("GreenTicket_WebAPI.Entities.Country", "Country")
+                        .WithMany("Addresses")
+                        .HasForeignKey("CountryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GreenTicket_WebAPI.Entities.Venue", "Venue")
+                        .WithOne("Address")
+                        .HasForeignKey("GreenTicket_WebAPI.Entities.Address", "VenueID");
+
                     b.Navigation("City");
+
+                    b.Navigation("Country");
 
                     b.Navigation("Venue");
                 });
@@ -455,6 +732,56 @@ namespace GreenTicketWebAPI.Migrations
                     b.Navigation("Event");
                 });
 
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Order", b =>
+                {
+                    b.HasOne("GreenTicket_WebAPI.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.OrderStatus", b =>
+                {
+                    b.HasOne("GreenTicket_WebAPI.Entities.User", "ApprovedBy")
+                        .WithMany()
+                        .HasForeignKey("ApprovedById");
+
+                    b.HasOne("GreenTicket_WebAPI.Entities.Order", "Order")
+                        .WithMany("Statuses")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApprovedBy");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Payment", b =>
+                {
+                    b.HasOne("GreenTicket_WebAPI.Entities.Order", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Restriction", b =>
+                {
+                    b.HasOne("GreenTicket_WebAPI.Entities.Seat", null)
+                        .WithMany("Restrictions")
+                        .HasForeignKey("SeatId");
+
+                    b.HasOne("GreenTicket_WebAPI.Entities.StandingPlace", null)
+                        .WithMany("Restrictions")
+                        .HasForeignKey("StandingPlaceId");
+                });
+
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.Row", b =>
                 {
                     b.HasOne("GreenTicket_WebAPI.Entities.Section", "Section")
@@ -488,7 +815,70 @@ namespace GreenTicketWebAPI.Migrations
                     b.Navigation("Event");
                 });
 
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.StandingPlace", b =>
+                {
+                    b.HasOne("GreenTicket_WebAPI.Entities.Section", "Section")
+                        .WithMany("StandingPlaces")
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Section");
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Ticket", b =>
+                {
+                    b.HasOne("GreenTicket_WebAPI.Entities.Order", "Order")
+                        .WithMany("Tickets")
+                        .HasForeignKey("OrderID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GreenTicket_WebAPI.Entities.Seat", "Seat")
+                        .WithMany()
+                        .HasForeignKey("SeatId");
+
+                    b.HasOne("GreenTicket_WebAPI.Entities.StandingPlace", "StandingPlace")
+                        .WithMany()
+                        .HasForeignKey("StandingPlaceId");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Seat");
+
+                    b.Navigation("StandingPlace");
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.User", b =>
+                {
+                    b.HasOne("GreenTicket_WebAPI.Entities.Address", "Address")
+                        .WithMany("Users")
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GreenTicket_WebAPI.Entities.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Address");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Address", b =>
+                {
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.City", b =>
+                {
+                    b.Navigation("Addresses");
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Country", b =>
                 {
                     b.Navigation("Addresses");
                 });
@@ -512,6 +902,15 @@ namespace GreenTicketWebAPI.Migrations
                     b.Navigation("Events");
                 });
 
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Order", b =>
+                {
+                    b.Navigation("Payments");
+
+                    b.Navigation("Statuses");
+
+                    b.Navigation("Tickets");
+                });
+
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.Performer", b =>
                 {
                     b.Navigation("EventPerformers");
@@ -522,9 +921,21 @@ namespace GreenTicketWebAPI.Migrations
                     b.Navigation("Seats");
                 });
 
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.Seat", b =>
+                {
+                    b.Navigation("Restrictions");
+                });
+
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.Section", b =>
                 {
                     b.Navigation("Rows");
+
+                    b.Navigation("StandingPlaces");
+                });
+
+            modelBuilder.Entity("GreenTicket_WebAPI.Entities.StandingPlace", b =>
+                {
+                    b.Navigation("Restrictions");
                 });
 
             modelBuilder.Entity("GreenTicket_WebAPI.Entities.Venue", b =>

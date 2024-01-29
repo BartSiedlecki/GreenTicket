@@ -2,7 +2,7 @@
 {
     public interface ISeatService
     {
-        Task ReserveTicketAsync(int eventId, int sectionId, string seatId, string sessionId);
+        Task<DateTime> ReserveTicketAsync(int eventId, int sectionId, string seatId, string sessionId);
         Task CancelTicketReservationAsync(int eventId, int sectionId, string seatId, string sessionId);
     }
 }

@@ -1,5 +1,8 @@
 const isProduction = false;
 
+// System setting
+export const serviceCostRate = 0.03;
+
 // Main page
 export const noOfNewestEvents = 10;
 
